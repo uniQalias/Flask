@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div id="dropdown" class="col-2">
+  <form action="/historicGraphs.html" method="get">
+    <select name="graph" class="custom-select">
+      <option selected disabled>Select a graph:</option>
+      <option value="DFF">Federal Interest Rate</option>
+      <option value="DPRIME">Bank Prime Loan Rate</option>
+      <option value="UNRATE">Unemployment Rate</option>
+      <option value="YIELD">YIELD</option>
+      <option value="SP_PE">SP_PE</option>
+      <!-- <option value="GDP">GDP</option> -->
+      <input type="submit" class="btn btn-primary">
+    </select>
+  </form>
+</div>
+
+<div id="chart" class="chart">
+  {% if graphJSON %}
+  <script type="text/javascript">
+    var graphs = {{ graphJSON | safe }}
+    Plotly.plot('chart', graphs, {});
+  </script>
+  {% else %}
+  <p style="padding-left: 75px">To begin, please select a graph.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

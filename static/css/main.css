@@ -1,0 +1,24 @@
+.nav-link{
+    color: #59F752 !important;
+}
+
+#dropdown{
+    padding-top: 10px;
+    padding-right: 0px;
+    padding-bottom: 10px;
+    padding-left: 75px;
+    white-space: nowrap;
+    min-width: 350px;
+}
+
+footer{
+    border-top-style: solid;
+    border-color: #808080; /*grey*/
+
+    margin: auto;
+    padding: 16px;
+
+    text-align: center;
+    font-style: italic;
+    font-size: 12px;
+}

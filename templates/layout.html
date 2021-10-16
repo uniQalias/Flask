@@ -2,9 +2,10 @@
 <html lang="en">
 
 <head>
+    
     <!-- Required meta tags -->
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -13,7 +14,10 @@
     <!--fontAwesome4-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <title>Hello, world!</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    <title>group 38</title>
 </head>
 
 <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
@@ -27,16 +31,10 @@
     <div class="collapse navbar-collapse" id="navbarDropdown">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-                <a class="nav-link" href="#">Home</a>
+                <a class="nav-link" href="/">Home</a>
             </li>
-        </ul>
-
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" href="register.php"><i title="Register" class="fa fa-user fa-2x"></i></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#"><i title="#" class="fa fa-sign-out fa-2x"></i></a>
+            <li class="nav-item active">
+                <a class="nav-link" href="/historicGraphs.html">History</a>
             </li>
         </ul>
     </div>
@@ -44,7 +42,6 @@
 
 
 <body>
-    {% block body %}{% endblock %}
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -56,10 +53,12 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    {% block body %}{% endblock %}
 </body>
 
 <footer>
-    <p><em>The Foot</em></p>
+    <p><em>Built in Python using Flask, pandas, plotly express, bootstrap</em></p>
 </footer>
 
 </html>
