@@ -35,29 +35,30 @@ def historicGraphs():
       UNRATE = pd.DataFrame.from_dict(historicDictionary["FREDUNRATE Data"]["dataset"]["data"])
       fig = px.line(UNRATE,x=0, y=1, title="Unemployment Rate", labels={"0":"Date", "1":"Unemployment Rate"})
 
+   if type == "GDPGR":
+      #GDPGR = GDP growth rate of US market
+      GDPGR = pd.DataFrame.from_dict(historicDictionary["FREDY695RY2A224NBEA Data"]["dataset"]["data"]) 
+      fig = px.line(GDPGR,x=0, y=1, title="GDP Growth Rate", labels={"0":"Date", "1":"Growth Rate"})
+
    if type == "YIELD":
       #YIELD = US Treasury Yield Curve Rate
       YIELD = pd.DataFrame.from_dict(historicDictionary["USTREASURYYIELD Data"]["dataset"]["data"])
-      fig = px.line(YIELD, title="US Treasury Yield Data")
+      fig = px.line(title="US Treasury Curve Rate")
       fig.add_scatter(x=YIELD[0], y=YIELD[1], mode='lines',name="1 Month Rate")
       fig.add_scatter(x=YIELD[0], y=YIELD[5], mode='lines',name="1 Year Rate")
       fig.update_xaxes(title_text='Dates')
-      fig.update_yaxes(title_text='US Treasury Yield Curve Rate')
+      fig.update_yaxes(title_text='Curve Rate')
 
    if type == "SP_PE":   
       #SPCOMP = S&P500 Price
       #SP500_PE_RATIO_MONTH = S&P500 PE Ratio
       SPCOMP = pd.DataFrame.from_dict(historicDictionary["YALESPCOMP Data"]["dataset"]["data"])
       PERATIO = pd.DataFrame.from_dict(historicDictionary["MULTPLSP500_PE_RATIO_MONTH Data"]["dataset"]["data"])
-      fig = px.line(SPCOMP,title="S&P 500", log_y=True)
+      fig = px.line(title="S&P 500", log_y=True)
       fig.add_scatter(x=SPCOMP[0], y=SPCOMP[1], mode='lines',name=historicDictionary["YALESPCOMP Data"]['dataset']['column_names'][1])  
       fig.add_scatter(x=PERATIO[0], y=PERATIO[1], mode='lines', name=historicDictionary['MULTPLSP500_PE_RATIO_MONTH Data']['dataset']['name'])
       fig.update_xaxes(title_text='Dates')
       fig.update_yaxes(title_text='Values')
-
-      #GDP
-      # GDP = pd.DataFrame.from_dict(historicDictionary[""]["dataset"]["data"])
-      # fig = px.line(GDP, x="date", y="value", title="Gross Dosmetic Product Rate" ,labels={"date": "Date", "value": "GDP Rate"})
 
    if request.args.get("graph") is not None:
       fig.add_vrect(x0="2001-03-01", x1="2001-11-01", fillcolor="LightSalmon", opacity=0.5, layer="below", line_width=0)

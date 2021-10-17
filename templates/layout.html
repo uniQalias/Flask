@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    
+
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,28 +20,27 @@
     <title>group 38</title>
 </head>
 
-<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
-    <a class="navbar-brand" href="#"><img alt="Logo" src="static/logo.png"></a></a>
-
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarDropdown"
-        aria-controls="navbarDropdown" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarDropdown">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-                <a class="nav-link" href="/">Home</a>
-            </li>
-            <li class="nav-item active">
-                <a class="nav-link" href="/historicGraphs.html">Historical Data</a>
-            </li>
-        </ul>
-    </div>
-</nav>
-
-
 <body>
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+        <a class="navbar-brand" href="#"><img alt="Logo" src="static/logo.png"></a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarDropdown"
+            aria-controls="navbarDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarDropdown">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/historicGraphs.html">Historical Data</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -55,10 +54,10 @@
         crossorigin="anonymous"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     {% block body %}{% endblock %}
-</body>
 
-<footer>
-    <p><em>Built in Python using Flask, pandas, plotly express, bootstrap</em></p>
-</footer>
+    <footer>
+        <p><em>Built in Python using Flask, pandas, plotly express, bootstrap</em></p>
+    </footer>
+</body>
 
 </html>
