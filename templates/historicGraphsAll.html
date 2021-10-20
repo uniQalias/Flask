@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div id="DFF">
+    <script>
+        var theStuff = {{ input["DFF"] | safe }}
+        Plotly.plot('DFF', theStuff, {});
+    </script>
+</div>
+<div id="DPRIME">
+    <script>
+        theStuff = {{ input["DPRIME"] | safe }}
+        Plotly.plot('DPRIME', theStuff, {});
+    </script>
+</div>
+<div id="UNRATE">
+    <script>
+        theStuff = {{ input["UNRATE"] | safe }}
+        Plotly.plot('UNRATE', theStuff, {});
+    </script>
+</div>
+<div id="GDPGR">
+    <script>
+        theStuff = {{ input["GDPGR"] | safe }}
+        Plotly.plot('GDPGR', theStuff, {});
+    </script>
+</div>
+<div id="YIELD">
+    <script>
+        theStuff = {{ input["YIELD"] | safe }}
+        Plotly.plot('YIELD', theStuff, {});
+    </script>
+</div>
+<div id="SP_PE">
+    <script>
+        theStuff = {{ input["SP_PE"] | safe }}
+        Plotly.plot('SP_PE', theStuff, {});
+    </script>
+</div>
+
+{% endblock %}

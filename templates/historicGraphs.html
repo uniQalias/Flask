@@ -17,10 +17,11 @@
   </form>
 </div>
 
-<div id="chart" class="chart">
+<div id="chart">
   {% if graphJSON %}
   <script>
     var graphs = {{ graphJSON | safe }}
+    console.log(graphs)
     Plotly.plot('chart', graphs, {});
   </script>
   {% else %}
