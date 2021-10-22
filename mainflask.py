@@ -7,16 +7,17 @@ app = Flask(__name__)
 def home():
    return render_template('home.html')
 
-@app.route("/historicGraphs.html")
+@app.route("/graphs.html")
 def historicGraphs():
-   type = request.args.get("graph")
+   type = request.args.get("dataset")
 
-   if request.args.get("graph") is not None:
-      return render_template('historicGraphs.html', graphJSON=maximus.theJSONS()[type])
+   if request.args.get("dataset") is not None:
+      input = maximus.allDataframes(request.args.get("start_date"), request.args.get("end_date"))[type]
+      return render_template('graphs.html', input=input)
    else:
-      return render_template('historicGraphs.html')
+      return render_template('graphs.html')
 
 @app.route("/historicGraphsAll.html")
 def historicGraphsAll():
-   input = maximus.theJSONS()
+   input = maximus.allDataframes('2000-01-01', '2021-01-01', historic = True)
    return render_template('historicGraphsAll.html', input=input)

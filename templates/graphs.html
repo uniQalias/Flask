@@ -3,8 +3,8 @@
 {% block body %}
 
 <div id="dropdown" class="col-2">
-  <form action="/historicGraphs.html" method="get">
-    <select name="graph" class="custom-select">
+  <form action="/graphs.html" method="get">
+    <select name="dataset" class="custom-select">
       <option selected disabled>Select a graph:</option>
       <option value="DFF">Federal Interest Rate</option>
       <option value="DPRIME">Bank Prime Loan Rate</option>
@@ -12,15 +12,23 @@
       <option value="GDPGR">GDP Growth Rate</option>
       <option value="YIELD">US Treasury Curve Rate</option>
       <option value="SP_PE">S&P 500</option>
-      <input type="submit" class="btn btn-primary">
     </select>
+    <br>
+    <label for="start_date">Start date:</label>
+    <br>
+    <input type="date" id="start_date" name="start_date" value="2020-01-01" min="2000-01-01" max="2021-01-01">
+    <br>
+    <label for="end_date">End date:</label>
+    <br>
+    <input type="date" id="end_date" name="end_date" value="2021-01-01" min="2000-01-01" max="2021-01-01">
+    <input type="submit" class="btn btn-primary">
   </form>
 </div>
 
 <div id="chart">
-  {% if graphJSON %}
+  {% if input %}
   <script>
-    var graphs = {{ graphJSON | safe }}
+    var graphs = {{ input | safe }}
     console.log(graphs)
     Plotly.plot('chart', graphs, {});
   </script>
