@@ -7,25 +7,48 @@ import time
 import datetime
 import os
 
-jsonPath = "static/historicInfo.json"
+jsonPath = "static/datasetInfo.json"
 
 def jsonChecker():
-     if not os.path.exists(jsonPath):
-          print("JSON does not exist, Updating!")
-          jsonUpdater()
+     """This process checks whether the json exists and whether it is up to date. If these two conditions are not fulfilled,
+     it will run jsonUpdater() to update the json. If jsonUpdater() returns an error, it will also return that error, as well
+     as the date when the dataset was last updated."""
 
+     errorCodeIfAny = ""
+
+     # Creates file if it doesnt exist
+     if not os.path.exists(jsonPath):
+          print("JSON does not exist, Creating!")
+          e = open(jsonPath, "w")
+          e.write("{\"lastUpdate\": \"Never\"}")
+          e.close
+
+     # Load datasetInfo.json into dictionary
      dictionary = {}
      with open(jsonPath, "r") as e:
           dictionary = json.load(e)
 
+     # If "lastUpdate" key does not match current day, run jsonUpdater()
      if dictionary["lastUpdate"] != str(datetime.date.today()):
           print("JSON Updating!")
-          jsonUpdater()
+          # If jsonUpdater() returns an error, record it
+          errorCodeIfAny = jsonUpdater() + " (this dataset's latest date: " + dictionary["lastUpdate"] + ")"
      else:
           print("JSON Up to Date!")
 
+     # Returns error code if error thrown
+     if errorCodeIfAny:
+          return errorCodeIfAny
+
+
 def jsonUpdater():
-     #catogory
+     """This process queries the API to create a dictionary where each key is the name of the data, 
+     and the value is the RAW data. If it succeeds in doing this, it will write the dictionary to 
+     datasetInfo.json. In the event any error is thrown, it will break out of the process and not
+     change datasetInfo.json, so the outdated data can still be used. It will also return the error.
+     (If facing 429 Error, wait for cooldown about 1 to 2 mins and try again, usually works)"""
+
+     #category
      #FRED = US Federal Reserve
      #USTREASURY = US Treasury
      #YALE = Yale department of Econ, Check SNP500 Price, Market confidence index
@@ -46,140 +69,204 @@ def jsonUpdater():
      MULTPLCode = ["SP500_PE_RATIO_MONTH"]
 
      def retreiveData(category, dataCode):
-     #setting delay to prevent IP softban from 429: Too many request
+     # setting delay to prevent IP softban from 429: Too many request
           time.sleep(4)
-          #setting NASDEQ datalink API URL, adding catagory and datacode
+          # setting NASDEQ datalink API URL, adding catagory and datacode
           url = "https://data.nasdaq.com/api/v3/datasets/"
           url = url + category + "/" + dataCode + "/"
 
-          #setting standard filters / API Key
+          # setting standard filters / API Key
           querystring={
           "access_key":"8c5eBM5zY6Yw8DdsBpek",
           "start_date":"1950-01-01",
           "end_date":str(datetime.date.today()),
           }
 
-          #executing requests
+          # executing requests
           payload={}
           headers={}
           response = requests.request("GET", url, headers=headers, data=payload, params=querystring)
           if response.ok:
                print("Status: OK")
                time.sleep(1)
-               #request is good, converting to json
+               # request is good, converting to json
                data = response.json()
-               #returning json data
+               # returning json data
                return data
 
           else:
                #catching error
-               status = response.status_code
-               reason = response.reason
-               print("REQUEST ERROR: ", status, reason)
+               status = str(response.status_code)
+               reason = str(response.reason)
+               print("REQUEST ERROR: " + status + " " + reason)
                time.sleep(1)
-               exit()
+               # returning a list with 2 values: status and reason
+               return [status, reason]
 
-
-     #MAIN Section Calling REQUEST function for all required DATA
+     # MAIN Section to Call REQUEST function for all required DATA
      datas = {}
+     errorCodeIfAny = ""
+
      for category in categories:
+          # if error code exists, break out of loop
+          if errorCodeIfAny:
+               break
+
           if category == "FRED":
                for code in FREDCode:
                     name = category + code + " Data"
                     print(name)
-                    datas[name] = retreiveData(category, code)
+                    retrievedValue = retreiveData(category, code)
+                    # if retrievedValue is a string, its a proper dataset, load into dictionary
+                    # if retrievedValue is a list, its an error code, store error code and break out of loop
+                    if type(retrievedValue) is not list: 
+                         datas[name] = retrievedValue
+                    else:
+                         errorCodeIfAny = retrievedValue[0] + " " + retrievedValue[1]
+                         break
           elif category == "USTREASURY":
                for code in USTREASURYCode:
                     name = category + code + " Data"
                     print(name)
-                    datas[name] = retreiveData(category, code)
+                    retrievedValue = retreiveData(category, code)
+                    if type(retrievedValue) is not list: 
+                         datas[name] = retrievedValue
+                    else:
+                         errorCodeIfAny = retrievedValue[0] + " " + retrievedValue[1]
+                         break
           elif category == "YALE":
                for code in YALECode:
                     name = category + code + " Data"
                     print(name)
-                    datas[name] = retreiveData(category, code)
+                    retrievedValue = retreiveData(category, code)
+                    if type(retrievedValue) is not list: 
+                         datas[name] = retrievedValue
+                    else:
+                         errorCodeIfAny = retrievedValue[0] + " " + retrievedValue[1]
+                         break
           elif category == "MULTPL":
                for code in MULTPLCode:
                     name = category + code + " Data"
                     print(name)
-                    datas[name] = retreiveData(category, code)
+                    retrievedValue = retreiveData(category, code)
+                    if type(retrievedValue) is not list: 
+                         datas[name] = retrievedValue
+                    else:
+                         errorCodeIfAny = retrievedValue[0] + " " + retrievedValue[1]
+                         break
           else:
                print("Skipped a category")
 
-     datas["lastUpdate"] = str(datetime.date.today())
-     
-     with open(jsonPath, "w") as e:
-          json.dump(datas, e)
+     # if no error code, write contents of dictionary and new updated date to datasetInfo.json
+     # if error code exists, don't change datasetInfo.json and return error code
+     if not errorCodeIfAny:
+          datas["lastUpdate"] = str(datetime.date.today())
+          with open(jsonPath, "w") as e:
+               json.dump(datas, e)
+     else:
+          return errorCodeIfAny
 
-     #if facing 429 Error, wait for cooldown about 1 to 2 mins and try again
-     #datas is a nested dictionary, with each key being the name of the data, and the value being the RAW data in dictionary format
 
+def dataframeGen(dataset, start_date, end_date, historic):
+     """This method prepares dataframes which is used to render graphs. It takes in a dataset, the start and end 
+     date, as well as whether it is intended to be displayed in the historical section. It then returns a json object
+     based on these inputs. If the data is to be displayed in the historical section, it will render recession
+     periods and not include date requested in the title. If for any reason the dataset is not found in the 
+     dictionary, it returns an empty string."""
 
-def dataframeGen(dictionary, dataset, start_date, end_date, historic):
+     # If not historic, populates dateIndicator which will be used in dataframe titles
+     dateIndicator=""
+     if historic == False:
+          dateIndicator = " [" + start_date + " to " + end_date + "]"
 
+     # Recession periods
      recessionPeriods = {
-        1: ["2001-03-01", "2001-11-01"],
-        2: ["2007-03-01", "2009-11-01"],
-        3: ["2020-02-01", "2020-04-01"]
+        1: ["2001-03-01", "2001-11-01"],     # dotcom Bubble
+        2: ["2007-03-01", "2009-11-01"],     # Great Recession
+        3: ["2020-02-01", "2020-04-01"]      # COVID-19 Recession
      }
-
-     if dataset == "DFF":
-          DATAFRAME = pd.DataFrame.from_dict(dictionary["FREDDFF Data"]["dataset"]["data"])
-          DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
-          fig = px.line(DATAFRAME, x=0, y=1, title="Federal Interest Rate",labels={"0": "Date", "1": "Interest Rate"})
-
-     if dataset == "DPRIME":
-          DATAFRAME = pd.DataFrame.from_dict(dictionary["FREDDPRIME Data"]["dataset"]["data"])
-          DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
-          fig = px.line(DATAFRAME, x=0, y=1, title="Bank Prime Loan Rate",labels={"0": "Date", "1": "Loan Rate"})
-
-     if dataset == "UNRATE":
-          DATAFRAME = pd.DataFrame.from_dict(dictionary["FREDUNRATE Data"]["dataset"]["data"])
-          DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
-          fig = px.line(DATAFRAME, x=0, y=1, title="Unemployment Rate",labels={"0": "Date", "1": "Unemployment Rate"})
-
-     if dataset == "YIELD":
-          fig = px.line(title="US Treasury Curve Rate")
-          fig.update_xaxes(title_text='Dates')
-          fig.update_yaxes(title_text='Curve Rate')
-          DATAFRAME = pd.DataFrame.from_dict(dictionary["USTREASURYYIELD Data"]["dataset"]["data"])
-          DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
-          fig.add_scatter(x=DATAFRAME[0], y=DATAFRAME[1],mode='lines', name="1 Month Rate")
-          fig.add_scatter(x=DATAFRAME[0], y=DATAFRAME[5],mode='lines', name="1 Year Rate")
      
-     if dataset == "GDPGR":
-          DATAFRAME = pd.DataFrame.from_dict(dictionary["FREDY695RY2A224NBEA Data"]["dataset"]["data"])
-          DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
-          fig = px.line(DATAFRAME, x=0, y=1, title="GDP Growth Rate",labels={"0": "Date", "1": "Growth Rate"})
-
-     if dataset == "SPCOMP":
-          DATAFRAME = pd.DataFrame.from_dict(dictionary["YALESPCOMP Data"]["dataset"]["data"])
-          DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
-          fig = px.line(DATAFRAME, x=0, y=1, title="S&P 500 Price",labels={"0": "Date", "1": "Value"})
-
-     if dataset == "PERATIO":
-          DATAFRAME = pd.DataFrame.from_dict(dictionary["MULTPLSP500_PE_RATIO_MONTH Data"]["dataset"]["data"])
-          DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
-          fig = px.line(DATAFRAME, x=0, y=1, title="S&P 500 PE Ratio",labels={"0": "Date", "1": "Value"})
-
-     if historic == True:
-          for i in recessionPeriods:
-               fig.add_vrect(x0=recessionPeriods[i][0], x1=recessionPeriods[i][1], fillcolor="LightSalmon", opacity=0.5, layer="below", line_width=0)
-
-     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
-
-def allDataframes(start_date, end_date, historic = False):
-     jsonChecker()
-
-     preparedJSON = {}
-     datasets = ["DFF", "DPRIME", "UNRATE", "YIELD", "GDPGR", "SPCOMP", "PERATIO"]
-
+     # opens datasetInfo.json, load to dictionary
      dictionary = {}
      with open(jsonPath, "r") as e:
           dictionary = json.load(e)
 
-     for i in datasets:
-          preparedJSON[i] = dataframeGen(dictionary, i, start_date, end_date, historic)
+     # dataset exists as key in dictionary
+     try:
+          if dataset == "DFF":
+               # reads corresponding key in dictionary, places data into dataframe
+               DATAFRAME = pd.DataFrame.from_dict(dictionary["FREDDFF Data"]["dataset"]["data"])
+               # narrow dataframe to within specified dates
+               DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
+               # convert dataframe to plotly data
+               fig = px.line(DATAFRAME, x=0, y=1, title="Federal Interest Rate" + dateIndicator, labels={"0": "Date", "1": "Interest Rate"})
+
+          if dataset == "DPRIME":
+               DATAFRAME = pd.DataFrame.from_dict(dictionary["FREDDPRIME Data"]["dataset"]["data"])
+               DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
+               fig = px.line(DATAFRAME, x=0, y=1, title="Bank Prime Loan Rate" + dateIndicator, labels={"0": "Date", "1": "Loan Rate"})
+
+          if dataset == "UNRATE":
+               DATAFRAME = pd.DataFrame.from_dict(dictionary["FREDUNRATE Data"]["dataset"]["data"])
+               DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
+               fig = px.line(DATAFRAME, x=0, y=1, title="Unemployment Rate" + dateIndicator, labels={"0": "Date", "1": "Unemployment Rate"})
+
+          if dataset == "YIELD":
+               fig = px.line(title="US Treasury Curve Rate" + dateIndicator)
+               fig.update_xaxes(title_text='Dates')
+               fig.update_yaxes(title_text='Curve Rate')
+               DATAFRAME = pd.DataFrame.from_dict(dictionary["USTREASURYYIELD Data"]["dataset"]["data"])
+               DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
+               fig.add_scatter(x=DATAFRAME[0], y=DATAFRAME[1],mode='lines', name="1 Month Rate")
+               fig.add_scatter(x=DATAFRAME[0], y=DATAFRAME[5],mode='lines', name="1 Year Rate")
+          
+          if dataset == "GDPGR":
+               DATAFRAME = pd.DataFrame.from_dict(dictionary["FREDY695RY2A224NBEA Data"]["dataset"]["data"])
+               DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
+               fig = px.line(DATAFRAME, x=0, y=1, title="GDP Growth Rate" + dateIndicator, labels={"0": "Date", "1": "Growth Rate"})
+
+          if dataset == "SPCOMP":
+               DATAFRAME = pd.DataFrame.from_dict(dictionary["YALESPCOMP Data"]["dataset"]["data"])
+               DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
+               fig = px.line(DATAFRAME, x=0, y=1, title="S&P 500 Price" + dateIndicator, labels={"0": "Date", "1": "Value"})
+
+          if dataset == "PERATIO":
+               DATAFRAME = pd.DataFrame.from_dict(dictionary["MULTPLSP500_PE_RATIO_MONTH Data"]["dataset"]["data"])
+               DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
+               fig = px.line(DATAFRAME, x=0, y=1, title="S&P 500 PE Ratio" + dateIndicator, labels={"0": "Date", "1": "Value"})
+
+          # if historic, draw regions of recession periods
+          if historic == True:
+               for i in recessionPeriods:
+                    fig.add_vrect(x0=recessionPeriods[i][0], x1=recessionPeriods[i][1], fillcolor="LightSalmon", opacity=0.5, layer="below", line_width=0)
+
+          # convert plotly data to json, return this json
+          return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+     # key not found in dictionary
+     except KeyError:
+          return ""
+
+
+def allDataframes(start_date, end_date, historic = False):
+     """This method is called by the main flask application whenever it needs graph information.
+     Firstly, it runs jsonChecker() to ensure datasetInfo.json is up to date. Then, It returns a 
+     dictionary with datasets as keys and plotly data as corresponding values. Additionally, if 
+     any error code is present, it also adds it to this dictionary as a separate key-value pair."""
+
+     errorCodeIfAny = ""
+     # If jsonChecker() returns error, record it
+     errorCodeIfAny = jsonChecker()
+
+     preparedJSON = {}
+     allDatasets = ["DFF", "DPRIME", "UNRATE", "YIELD", "GDPGR", "SPCOMP", "PERATIO"]
+
+     # Populate preparedJSON with dataset key(dataset)-value(plotly json) pairs
+     for dataset in allDatasets:
+          preparedJSON[dataset] = dataframeGen(dataset, start_date, end_date, historic)
+
+     # If there was an error updating datasetInfo.json, add error code to preparedJSON as another key-value pair
+     if errorCodeIfAny:
+          preparedJSON["errorCode"] = errorCodeIfAny
 
      return preparedJSON

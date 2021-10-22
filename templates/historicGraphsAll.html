@@ -2,6 +2,12 @@
 
 {% block body %}
 
+<div>
+    {% if errorCode %}
+    <p style="padding-left: 75px">Unable to retrieve newest data! Reason: {{ errorCode }}</p>
+    {% endif %}
+</div>
+
 <div id="DFF">
     <script>
         var theStuff = {{ input["DFF"] | safe }}
