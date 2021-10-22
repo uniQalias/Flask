@@ -5,10 +5,17 @@ import plotly.express as px
 import requests
 import time
 import datetime
+import os
+
+jsonPath = "static/historicInfo.json"
 
 def jsonChecker():
+     if not os.path.exists(jsonPath):
+          print("JSON does not exist, Updating!")
+          jsonUpdater()
+
      dictionary = {}
-     with open("historicInfo.json", "r") as e:
+     with open(jsonPath, "r") as e:
           dictionary = json.load(e)
 
      if dictionary["lastUpdate"] != str(datetime.date.today()):
@@ -101,7 +108,7 @@ def jsonUpdater():
 
      datas["lastUpdate"] = str(datetime.date.today())
      
-     with open("historicInfo.json", "w") as e:
+     with open(jsonPath, "w") as e:
           json.dump(datas, e)
 
      #if facing 429 Error, wait for cooldown about 1 to 2 mins and try again
@@ -131,11 +138,6 @@ def dataframeGen(dictionary, dataset, start_date, end_date, historic):
           DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
           fig = px.line(DATAFRAME, x=0, y=1, title="Unemployment Rate",labels={"0": "Date", "1": "Unemployment Rate"})
 
-     if dataset == "GDPGR":
-          DATAFRAME = pd.DataFrame.from_dict(dictionary["FREDY695RY2A224NBEA Data"]["dataset"]["data"])
-          DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
-          fig = px.line(DATAFRAME, x=0, y=1, title="GDP Growth Rate",labels={"0": "Date", "1": "Growth Rate"})
-
      if dataset == "YIELD":
           fig = px.line(title="US Treasury Curve Rate")
           fig.update_xaxes(title_text='Dates')
@@ -144,18 +146,21 @@ def dataframeGen(dictionary, dataset, start_date, end_date, historic):
           DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
           fig.add_scatter(x=DATAFRAME[0], y=DATAFRAME[1],mode='lines', name="1 Month Rate")
           fig.add_scatter(x=DATAFRAME[0], y=DATAFRAME[5],mode='lines', name="1 Year Rate")
+     
+     if dataset == "GDPGR":
+          DATAFRAME = pd.DataFrame.from_dict(dictionary["FREDY695RY2A224NBEA Data"]["dataset"]["data"])
+          DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
+          fig = px.line(DATAFRAME, x=0, y=1, title="GDP Growth Rate",labels={"0": "Date", "1": "Growth Rate"})
 
-     if dataset == "SP_PE":
-          fig = px.line(title="S&P 500", log_y=True)   
-          fig.update_xaxes(title_text='Dates')
-          fig.update_yaxes(title_text='Values')
+     if dataset == "SPCOMP":
           DATAFRAME = pd.DataFrame.from_dict(dictionary["YALESPCOMP Data"]["dataset"]["data"])
           DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
-          fig.add_scatter(x=DATAFRAME[0], y=DATAFRAME[1], mode='lines',name=dictionary["YALESPCOMP Data"]['dataset']['column_names'][1])
+          fig = px.line(DATAFRAME, x=0, y=1, title="S&P 500 Price",labels={"0": "Date", "1": "Value"})
+
+     if dataset == "PERATIO":
           DATAFRAME = pd.DataFrame.from_dict(dictionary["MULTPLSP500_PE_RATIO_MONTH Data"]["dataset"]["data"])
           DATAFRAME = DATAFRAME[(DATAFRAME[0] >= start_date) & (DATAFRAME[0] <= end_date)]
-          fig.add_scatter(x=DATAFRAME[0], y=DATAFRAME[1], mode='lines',name=dictionary['MULTPLSP500_PE_RATIO_MONTH Data']['dataset']['name'])
-
+          fig = px.line(DATAFRAME, x=0, y=1, title="S&P 500 PE Ratio",labels={"0": "Date", "1": "Value"})
 
      if historic == True:
           for i in recessionPeriods:
@@ -168,10 +173,10 @@ def allDataframes(start_date, end_date, historic = False):
      jsonChecker()
 
      preparedJSON = {}
-     datasets = ["DFF", "DPRIME", "UNRATE", "GDPGR", "YIELD", "SP_PE"]
+     datasets = ["DFF", "DPRIME", "UNRATE", "YIELD", "GDPGR", "SPCOMP", "PERATIO"]
 
      dictionary = {}
-     with open("historicInfo.json", "r") as e:
+     with open(jsonPath, "r") as e:
           dictionary = json.load(e)
 
      for i in datasets:

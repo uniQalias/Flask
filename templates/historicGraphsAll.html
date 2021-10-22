@@ -20,22 +20,28 @@
         Plotly.plot('UNRATE', theStuff, {});
     </script>
 </div>
-<div id="GDPGR">
-    <script>
-        theStuff = {{ input["GDPGR"] | safe }}
-        Plotly.plot('GDPGR', theStuff, {});
-    </script>
-</div>
 <div id="YIELD">
     <script>
         theStuff = {{ input["YIELD"] | safe }}
         Plotly.plot('YIELD', theStuff, {});
     </script>
 </div>
-<div id="SP_PE">
+<div id="GDPGR">
     <script>
-        theStuff = {{ input["SP_PE"] | safe }}
-        Plotly.plot('SP_PE', theStuff, {});
+        theStuff = {{ input["GDPGR"] | safe }}
+        Plotly.plot('GDPGR', theStuff, {});
+    </script>
+</div>
+<div id="SPCOMP">
+    <script>
+        theStuff = {{ input["SPCOMP"] | safe }}
+        Plotly.plot('SPCOMP', theStuff, {});
+    </script>
+</div>
+<div id="PERATIO">
+    <script>
+        theStuff = {{ input["PERATIO"] | safe }}
+        Plotly.plot('PERATIO', theStuff, {});
     </script>
 </div>
 
