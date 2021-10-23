@@ -40,3 +40,9 @@ def historicGraphsAll():
       return render_template('historicGraphsAll.html', input=input, errorCode=input["errorCode"])
    else:
       return render_template('historicGraphsAll.html', input=input)
+
+@app.route("/prediction.html")
+def prediction():
+   input = maximus.allPredictedDataframes()
+
+   return render_template('prediction.html', input=input)

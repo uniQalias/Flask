@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div id="FREDDFF Data">
+    <script>
+        var theStuff = {{ input["FREDDFF Data"] | safe }}
+        Plotly.plot('FREDDFF Data', theStuff, {});
+    </script>
+</div>
+<div id="FREDDPRIME Data">
+    <script>
+        theStuff = {{ input["FREDDPRIME Data"] | safe }}
+        Plotly.plot('FREDDPRIME Data', theStuff, {});
+    </script>
+</div>
+<div id="FREDUNRATE Data">
+    <script>
+        theStuff = {{ input["FREDUNRATE Data"] | safe }}
+        Plotly.plot('FREDUNRATE Data', theStuff, {});
+    </script>
+</div>
+<div id="MULTPLSP500_PE_RATIO_MONTH Data">
+    <script>
+        theStuff = {{ input["MULTPLSP500_PE_RATIO_MONTH Data"] | safe }}
+        Plotly.plot('MULTPLSP500_PE_RATIO_MONTH Data', theStuff, {});
+    </script>
+</div>
+<div id="USTREASURYYIELD 1 Month Data">
+    <script>
+        theStuff = {{ input["USTREASURYYIELD 1 Month Data"] | safe }}
+        Plotly.plot('USTREASURYYIELD 1 Month Data', theStuff, {});
+    </script>
+</div>
+<div id="USTREASURYYIELD 1 Year Data">
+    <script>
+        theStuff = {{ input["USTREASURYYIELD 1 Year Data"] | safe }}
+        Plotly.plot('USTREASURYYIELD 1 Year Data', theStuff, {});
+    </script>
+</div>
+<div id="YALESPCOMP Data">
+    <script>
+        theStuff = {{ input["YALESPCOMP Data"] | safe }}
+        Plotly.plot('YALESPCOMP Data', theStuff, {});
+    </script>
+</div>
+
+{% endblock %}

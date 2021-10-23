@@ -36,7 +36,6 @@
   {% if input %}
   <script>
     var graphs = {{ input | safe }}
-    console.log(graphs)
     Plotly.plot('chart', graphs, {});
   </script>
   {% else %}

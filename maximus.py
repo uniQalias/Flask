@@ -7,7 +7,9 @@ import time
 import datetime
 import os
 
-jsonPath = "static/datasetInfo.json"
+
+dir = os.path.dirname(__file__)
+jsonPath = os.path.join(dir, "static/datasetInfo.json")
 
 def jsonChecker():
      """This process checks whether the json exists and whether it is up to date. If these two conditions are not fulfilled,
@@ -32,13 +34,13 @@ def jsonChecker():
      if dictionary["lastUpdate"] != str(datetime.date.today()):
           print("JSON Updating!")
           # If jsonUpdater() returns an error, record it
-          errorCodeIfAny = jsonUpdater() + " (this dataset's latest date: " + dictionary["lastUpdate"] + ")"
+          errorCodeIfAny = jsonUpdater()
      else:
           print("JSON Up to Date!")
 
      # Returns error code if error thrown
      if errorCodeIfAny:
-          return errorCodeIfAny
+          return errorCodeIfAny  + " (this dataset's latest date: " + dictionary["lastUpdate"] + ")"
 
 
 def jsonUpdater():
@@ -268,5 +270,49 @@ def allDataframes(start_date, end_date, historic = False):
      # If there was an error updating datasetInfo.json, add error code to preparedJSON as another key-value pair
      if errorCodeIfAny:
           preparedJSON["errorCode"] = errorCodeIfAny
+          
+     return preparedJSON
+
+def allPredictedDataframes():
+     """This method is called by the main flask application whenever it needs the prediction
+     graph data. It reads each prediction json file, creates a key(dataset)-value(plotly data) 
+     pair for each one, and places these pairs in a dictionary and returns it."""
+
+     jsonFiles=[
+          "static/predict_datasetsjson/FREDDFF Data.json",
+          "static/predict_datasetsjson/FREDDPRIME Data.json",
+          "static/predict_datasetsjson/FREDUNRATE Data.json",
+          "static/predict_datasetsjson/MULTPLSP500_PE_RATIO_MONTH Data.json",
+          "static/predict_datasetsjson/USTREASURYYIELD 1 Month Data.json",
+          "static/predict_datasetsjson/USTREASURYYIELD 1 Year Data.json",
+          "static/predict_datasetsjson/YALESPCOMP Data.json"
+          ]
+
+     dictionary = {}
+     preparedJSON = {}
+
+     # Runs for each file listed in jsonFiles
+     for file in jsonFiles:
+
+          # Opens dataset, load to dictionary
+          with open(os.path.join(dir, file), "r") as e:
+               dictionary = json.load(e)
+
+          # Obtain dataset name by trimming file name
+          datasetName = file
+          datasetName = datasetName.replace("static/predict_datasetsjson/", "")
+          datasetName = datasetName.replace(".json", "")
+
+          # reads corresponding key in dictionary, places data into dataframe
+          DATAFRAME = pd.DataFrame.from_dict(dictionary["data"])
+          # trims unnecessary text in date
+          DATAFRAME["0"] = DATAFRAME["0"].str.replace("T00:00:00.000Z", "", regex=True)
+          fig = px.line(title=datasetName)
+          fig.update_xaxes(title_text='Data')
+          fig.update_yaxes(title_text='Values')
+          fig.add_scatter(x=DATAFRAME["0"], y=DATAFRAME["Value"],mode='lines', name="Actual Value")
+          fig.add_scatter(x=DATAFRAME["0"], y=DATAFRAME["Predictions"],mode='lines', name="Predicted Value")
+          # convert dataframe to plotly data, load into preparedJSON with key being datasetName and value being plotly data
+          preparedJSON[datasetName] = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
      return preparedJSON
